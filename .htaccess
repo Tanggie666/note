@@ -1,14 +1,21 @@
-# ACME 证书校验必须放行，否则 HTTPS 续签会失败
-location ^~ /.well-known/acme-challenge/ { allow all; }
+# ===== 便签系统 访问控制（Apache）=====
+#
+# ⚠️ 本文件只在 Apache 下生效。若线上是 nginx，nginx 不读 .htaccess，
+#    必须改成把 README「配置伪静态」里的 nginx 规则填进站点配置，
+#    否则 data/app.db 会被任何人直接下载。
+#
+# 正则不带 ^/ 锚定，统一用 (^|/) 边界，这样站点放在子目录时同样生效。
 
-# 内部目录。边界用 (/|$) 锚定，避免 datax / myapp 被误伤
-if ($uri ~* "/(app|data|photos|_bak|hexstrike_envs|hexstrike_data)(/|$)") { return 403; }
+Options -Indexes
 
-# router.php 只给 php -S 内置服务器用，线上必须拒绝（否则会被当脚本执行）
-if ($uri ~* "(^|/)router\.php$") { return 403; }
+# 1) 内部目录。边界用 (/|$) 锚定，避免 datax / myapp 被误伤
+RedirectMatch 403 (?i)(^|/)(app|data|photos|_bak)(/|$)
 
-# 隐藏文件（.env/.htaccess/.git），但放过 .well-known
-if ($uri ~* "(^|/)\.(?!well-known)") { return 403; }
+# 2) router.php 仅供本地调试，线上必须拒绝（否则会被当成脚本执行）
+RedirectMatch 403 (?i)(^|/)router\.php$
 
-# 危险后缀（备份包不要放在网站根目录）
-if ($uri ~* "\.(bak|orig|old|db|db-wal|db-shm|sqlite|sqlite3|ini|log|md|txt|bin|zip|tar|gz|7z|rar|sql)$") { return 403; }
+# 3) 隐藏文件（.env/.htaccess/.git），负向断言放过 .well-known（否则 HTTPS 续签会失败）
+RedirectMatch 403 (?i)(^|/)\.(?!well-known)
+
+# 4) 危险后缀（备份包不要放在网站根目录）
+RedirectMatch 403 (?i)\.(bak|orig|old|db|db-wal|db-shm|sqlite|sqlite3|ini|log|md|txt|bin|zip|tar|gz|7z|rar|sql)$
