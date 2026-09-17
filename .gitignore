@@ -1,0 +1,34 @@
+# ===== 运行时数据：绝不进仓库 =====
+# 数据库（含管理员密码哈希、便签密文）
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.sqlite
+data/*.sqlite3
+# 但保留访问守卫文件
+!data/.htaccess
+
+# 照片原件 / 密文
+photos/*
+!photos/.htaccess
+
+# ===== 备份包 =====
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+*.sql
+
+# ===== 编辑器 / 系统 =====
+.idea/
+.vscode/
+*.swp
+*~
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ===== 工具残留 =====
+.hexstrike_data/
+hexstrike_envs/

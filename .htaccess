@@ -1,0 +1,14 @@
+# ACME 证书校验必须放行，否则 HTTPS 续签会失败
+location ^~ /.well-known/acme-challenge/ { allow all; }
+
+# 内部目录。边界用 (/|$) 锚定，避免 datax / myapp 被误伤
+if ($uri ~* "/(app|data|photos|_bak|hexstrike_envs|hexstrike_data)(/|$)") { return 403; }
+
+# router.php 只给 php -S 内置服务器用，线上必须拒绝（否则会被当脚本执行）
+if ($uri ~* "(^|/)router\.php$") { return 403; }
+
+# 隐藏文件（.env/.htaccess/.git），但放过 .well-known
+if ($uri ~* "(^|/)\.(?!well-known)") { return 403; }
+
+# 危险后缀（备份包不要放在网站根目录）
+if ($uri ~* "\.(bak|orig|old|db|db-wal|db-shm|sqlite|sqlite3|ini|log|md|txt|bin|zip|tar|gz|7z|rar|sql)$") { return 403; }
